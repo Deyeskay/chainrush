@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Chain Rush Game</title>
+
+<style>
+:root {
+  --bg: #0d47ff;
+  --bg-dark: #0836cc;
+  --card: #ffffff;
+  --text: #ffffff;
+  --accent: #00e5ff;
+  --danger: #ff5252;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(900px 520px at 25% 20%, rgb(255 90 180 / 83%), transparent 55%), radial-gradient(900px 520px at 75% 60%, rgb(60 160 255 / 98%), transparent 55%), radial-gradient(700px 420px at 55% 10%, rgba(190, 120, 255, 0.14), transparent 60%), linear-gradient(180deg, #f7fbff 0%, #eef5ff 45%, #f7fbff 100%);
+  height: 100vh;
+  color: var(--text);
+  overflow: hidden;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  background: url("https://deyeskay.github.io/hub/sk-download.svg") center / cover no-repeat;
+  box-shadow:
+    0 6px 10px rgba(0,0,0,0.10),
+    0 10px 22px rgba(0,0,0,0.18);
+  border: 2px solid rgba(255,255,255,0.75);
+}
+
+.app-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+}
+
+
+/* ---------- Screens ---------- */
+.screen {
+  display: none;
+  height: 100vh;
+  flex-direction: column;
+}
+
+.screen.active {
+  display: flex;
+}
+
+/* ---------- Header ---------- */
+.header {
+  background: #00000080;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+}
+
+.timer {
+  font-size: 20px;
+  letter-spacing: 1px;
+}
+
+/* ---------- Center Feed ---------- */
+.feed-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  padding: 40px 0;
+}
+
+.word-feed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.word-item {
+  opacity: 0.35;
+  font-size: 20px;
+  margin: 16px 0;
+  transition: all 0.3s ease;
+}
+
+.word-item.active {
+  opacity: 1;
+  font-size: 30px;
+  font-weight: 700;
+  transform: scale(1.15);
+}
+
+/* ---------- Footer ---------- */
+.footer {
+  padding: 16px;
+}
+
+.primary-btn {
+	width: 100%;
+    padding: 16px;
+    font-size: 18px;
+    border-radius: 14px;
+    background: var(--card);
+    color: #000;
+    font-weight: 700;
+    border: 1px solid rgb(104 189 250 / 38%);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* ---------- Start Screen ---------- */
+.start-content {
+  padding: 24px;
+  gap: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+#startScreen {
+  overflow: scroll;
+}
+
+#teamInputs {
+  display: flex;
+  flex-direction: column;
+}
+
+#teamInputs input {
+  margin-bottom: 5px;
+}
+
+input {
+  padding: 14px;
+  border-radius: 10px;
+  border: none;
+  font-size: 16px;
+}
+
+.word-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.word-row button {
+  background: none;
+  border: none;
+  color: red;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+
+/* ---------- Modal ---------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.active {
+  display: flex;
+}
+
+.modal-card {
+  background: white;
+  color: black;
+  padding: 24px;
+  border-radius: 18px;
+  width: 80%;
+  text-align: center;
+  animation: pop 0.25s ease;
+}
+
+#modalTeam {
+  font-size:30px;
+}
+
+#modalTime {
+  font-size: 25px;
+  color: #00af07;
+}
+
+@keyframes pop {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* ---------- Scores ---------- */
+.score-list {
+  padding: 24px;
+  flex: 1;
+}
+
+.score-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-size: 18px;
+}
+/*--------- Helper -------*/
+.help-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.help-icon:active {
+  transform: scale(0.9);
+}
+
+.tap-helper {
+	text-align: center;
+    font-size: 14px;
+    color: rgb(255 255 255 / 85%);
+    margin-top: 6px; 
+	opacity:0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    background: #65098b3b;
+    padding: 10px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.tap-helper.show {
+  opacity: 1;
+}
+
+
+</style>
+</head>
+
+<body>
+
+<!-- START SCREEN -->
+<div id="startScreen" class="screen active">
+
+  <!-- Start Screen Top Bar -->
+  <div class="header">
+  <div class="brand">
+    <div class="logo"></div>
+    <div class="app-title">Chain Rush</div>
+  </div>
+
+  <div style="display:flex; gap:10px;">
+  <div class="help-icon" onclick="openWordManager()">⚙️</div>
+  <div class="help-icon" onclick="openHelp()">💡</div>
+</div>
+
+</div>
+
+
+  <div class="start-content">
+    <input id="teamCount" type="number" min="1" placeholder="Number of teams"/>
+    <div id="teamInputs"></div>
+    <button class="primary-btn" onclick="startGame()">Start Round</button>
+  </div>
+
+</div>
+
+<!-- ROUND SCREEN -->
+<div id="roundScreen" class="screen">
+  <div class="header">
+    <div id="teamName"></div>
+    <div class="timer">Timer: <span class="timer" id="timer">0.00</span></div>
+  </div>
+
+  <div id="tapHelper" class="tap-helper">Tap screen to generate word pair</div>
+
+
+  <div class="feed-wrapper" onclick="handleTap()">
+    <div class="word-feed" id="wordFeed"></div>
+  </div>
+
+  <div class="footer">
+    <button class="primary-btn" id="goBtn" onclick="handleGoFinish()">GO</button>
+  </div>
+</div>
+
+<!-- SCORES SCREEN -->
+<div id="scoreScreen" class="screen">
+  <div class="header"><h3>Scores</h3></div>
+  <div class="score-list" id="scores"></div>
+  <div class="footer">
+    <button class="primary-btn" onclick="newRound()">New Round</button>
+    <br/><br/>
+    <button class="primary-btn" style="background:var(--danger);color:white" onclick="exitGame()">Exit</button>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="confirmModal">
+  <div class="modal-card">
+    <h3 id="modalTeam"></h3>
+    <p id="modalTime"></p>
+    <button class="primary-btn" onclick="confirmNext()">Next</button>
+  </div>
+</div>
+
+<!-- HOW TO PLAY MODAL -->
+<div class="modal" id="helpModal">
+  <div class="modal-card" style="max-height:80vh; overflow:auto; text-align:left;">
+    <h3>How to Play</h3>
+
+    <p><strong>Objective:</strong><br>
+    Form a continuous human chain and reach the finish line as fast as possible.</p>
+
+    <p><strong>Word Pair Meaning:</strong><br>
+    <em>Order matters!</em></p>
+
+    <ul>
+      <li><strong>First word</strong> → Anchor limb (touch previous point)</li>
+      <li><strong>Second word</strong> → Extension limb (stretch forward)</li>
+    </ul>
+
+    <p><strong>How the Chain Grows:</strong></p>
+    <ol>
+      <li>Player 1 anchors to the <strong>start line</strong></li>
+      <li>Player 1 extends forward using the second limb</li>
+      <li>Next player anchors to the previous extension</li>
+      <li>Chain must never break</li>
+    </ol>
+
+    <p><strong>Finish:</strong><br>
+    When the final extension limb touches the finish line, press <strong>Finish</strong>.</p>
+
+    <br>
+    <button class="primary-btn" onclick="closeHelp()">Close</button>
+  </div>
+</div>
+
+<!-- WORD MANAGER MODAL -->
+<div class="modal" id="wordModal">
+  <div class="modal-card" style="max-height:80vh; overflow:auto; text-align:left;">
+    <h3>Manage Words</h3>
+
+    <div id="wordList"></div>
+
+    <input id="newWordInput" placeholder="Add new word (e.g. Elbow)" />
+
+    <br><br>
+    <button class="primary-btn" onclick="addWord()">Add Word</button>
+    <br><br>
+    <button class="primary-btn" onclick="closeWordManager()">Done</button>
+  </div>
+</div>
+
+
+<script>
+
+function openHelp() {
+  document.getElementById("helpModal").classList.add("active");
+}
+
+function closeHelp() {
+  document.getElementById("helpModal").classList.remove("active");
+}
+
+function openWordManager() {
+  renderWordList();
+  document.getElementById("wordModal").classList.add("active");
+}
+
+function closeWordManager() {
+  document.getElementById("wordModal").classList.remove("active");
+}
+
+function renderWordList() {
+  const list = document.getElementById("wordList");
+  list.innerHTML = "";
+
+  words.forEach((word, index) => {
+    const div = document.createElement("div");
+    div.className = "word-row";
+    div.innerHTML = `
+      <span>${word}</span>
+      <button onclick="removeWord(${index})">✕</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function addWord() {
+  const input = document.getElementById("newWordInput");
+  const value = input.value.trim();
+
+  if (!value) return;
+
+  // Prevent duplicates
+  if (words.includes(value)) {
+    alert("Word already exists");
+    return;
+  }
+
+  words.push(value);
+  input.value = "";
+  renderWordList();
+}
+
+function removeWord(index) {
+  words.splice(index, 1);
+  renderWordList();
+}
+
+
+/* ---------- Data ---------- */
+let words = ["Left Hand","Right Hand","Left Leg","Right Leg"];
+let teams = [];
+let currentTeam = 0;
+let roundState = "IDLE";
+let startTime = 0;
+let timerInterval;
+
+/* ---------- Start Screen ---------- */
+document.getElementById("teamCount").addEventListener("input", e => {
+  const container = document.getElementById("teamInputs");
+  container.innerHTML = "";
+
+  for (let i = 0; i < e.target.value; i++) {
+    const input = document.createElement("input");
+    input.placeholder = `Team ${i + 1} name`;
+    input.required = true;
+
+    // ✅ Remove red border as soon as user types
+    input.addEventListener("input", () => {
+      input.style.border = "none";
+    });
+
+    container.appendChild(input);
+  }
+});
+
+
+function startGame() {
+
+  const teamCountInput = document.getElementById("teamCount");
+  const teamCount = parseInt(teamCountInput.value, 10);
+
+  // Validate number of teams
+  if (!teamCount || teamCount < 1) {
+    teamCountInput.style.border = "2px solid #ff5252";
+    teamCountInput.focus();
+    return;
+  } else {
+    teamCountInput.style.border = "none";
+  }
+
+  const inputs = [...document.querySelectorAll("#teamInputs input")];
+  
+	let hasError = false;
+
+	inputs.forEach(input => {
+	  if (!input.value.trim()) {
+		input.style.border = "2px solid #ff5252"; // red border
+		hasError = true;
+	  } else {
+		input.style.border = "none"; // reset if valid
+	  }
+	});
+
+	if (hasError) return;
+  
+  teams = inputs.map(i => ({name: i.value || "Team", score: 0}));
+  currentTeam = 0;
+  showScreen("roundScreen");
+  setupRound();
+}
+
+/* ---------- Round ---------- */
+function setupRound() {
+  roundState = "IDLE";
+  document.getElementById("teamName").textContent = "Team: "+teams[currentTeam].name;
+  document.getElementById("timer").textContent = "0.00";
+  document.getElementById("wordFeed").innerHTML = "";
+  document.getElementById("goBtn").textContent = "GO";
+}
+
+function handleGoFinish() {
+  if (roundState === "IDLE") {
+    roundState = "RUNNING";
+    startTimer();
+    generateWord();
+    document.getElementById("goBtn").textContent = "Finish";
+	
+  // Show tap helper
+  const helper = document.getElementById("tapHelper");
+  helper.classList.add("show");
+
+  // Auto-hide after 3 seconds
+  setTimeout(() => {
+    helper.classList.remove("show");
+  }, 10000);	
+  
+  } else if (roundState === "RUNNING") {
+    stopTimer();
+    showModal();
+  }
+}
+
+function handleTap() {
+  if (roundState !== "RUNNING") return;
+  generateWord();
+}
+
+function generateWord() {
+  const shuffled = [...words].sort(()=>Math.random()-0.5).slice(0,2).join(" - ");
+  const feed = document.getElementById("wordFeed");
+  [...feed.children].forEach(c=>c.classList.remove("active"));
+  const div = document.createElement("div");
+  div.className = "word-item active";
+  div.textContent = shuffled;
+  feed.appendChild(div);
+  feed.parentElement.scrollTop = feed.parentElement.scrollHeight;
+}
+
+/* ---------- Timer ---------- */
+function startTimer() {
+  startTime = performance.now();
+  timerInterval = setInterval(()=>{
+    const t = ((performance.now()-startTime)/1000).toFixed(2);
+    document.getElementById("timer").textContent = t;
+  },50);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+}
+
+/* ---------- Modal ---------- */
+function showModal() {
+  document.getElementById("modalTeam").textContent = teams[currentTeam].name;
+  document.getElementById("modalTime").textContent = "Time: " + document.getElementById("timer").textContent + " s";
+  document.getElementById("confirmModal").classList.add("active");
+}
+
+function confirmNext() {
+  teams[currentTeam].score = document.getElementById("timer").textContent;
+  document.getElementById("confirmModal").classList.remove("active");
+  currentTeam++;
+  if (currentTeam >= teams.length) showScores();
+  else setupRound();
+}
+
+/* ---------- Scores ---------- */
+function showScores() {
+  showScreen("scoreScreen");
+  const list = document.getElementById("scores");
+  list.innerHTML = "";
+  teams.forEach(t=>{
+    const div = document.createElement("div");
+    div.className = "score-item";
+    div.innerHTML = `<span>${t.name}</span><span>${t.score}s</span>`;
+    list.appendChild(div);
+  });
+}
+
+/* ---------- Navigation ---------- */
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function newRound() {
+  teams.forEach(t=>t.score=0);
+  currentTeam = 0;
+  showScreen("roundScreen");
+  setupRound();
+}
+
+function exitGame() {
+  // Reset data
+  teams = [];
+  currentTeam = 0;
+  roundState = "IDLE";
+
+  // Reset team count input
+  const teamCountInput = document.getElementById("teamCount");
+  teamCountInput.value = "";
+  teamCountInput.style.border = "none";
+
+  // Remove dynamically created team inputs
+  const teamInputs = document.getElementById("teamInputs");
+  teamInputs.innerHTML = "";
+
+  // Reset round UI (safety)
+  document.getElementById("wordFeed").innerHTML = "";
+  document.getElementById("timer").textContent = "0.00";
+  document.getElementById("goBtn").textContent = "GO";
+
+  // Hide helper text if visible
+  const helper = document.getElementById("tapHelper");
+  if (helper) helper.classList.remove("show");
+
+  // Finally go to start screen
+  showScreen("startScreen");
+}
+
+</script>
+
+</body>
+</html>
